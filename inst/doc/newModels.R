@@ -38,7 +38,7 @@ DDLSToy <- loadSCProfiles(
   gene.ID.column = "Gene_ID",
   min.cells = 0,
   min.counts = 0,
-  project = "ToyExampleBreast"
+  project = "ToyExample"
 )
 DDLSToy
 
@@ -143,7 +143,9 @@ lapply(
 )
 
 ## ----simBulkProfiles----------------------------------------------------------
-DDLSToy <- simBulkProfiles(object = DDLSToy, type.data = "both")
+DDLSToy <- simBulkProfiles(
+  object = DDLSToy, type.data = "both", pseudobulk.function = "MeanCPM"
+)
 
 ## -----------------------------------------------------------------------------
 DDLSToy
@@ -159,7 +161,7 @@ DDLSToy
 #  )
 
 ## ---- warning = FALSE---------------------------------------------------------
-DDLSToy <- trainDigitalDLSorterModel(object = DDLSToy)
+DDLSToy <- trainDigitalDLSorterModel(object = DDLSToy, scaling = "standarize")
 
 ## -----------------------------------------------------------------------------
 DDLSToy
@@ -273,6 +275,8 @@ DDLSToy <- loadDeconvData(
 DDLSToy <- deconvDigitalDLSorterObj(
   object = DDLSToy, 
   name.data = "Simulated.example",
+  normalize = TRUE,
+  scaling = "standarize",
   verbose = FALSE
 )
 ## plot results

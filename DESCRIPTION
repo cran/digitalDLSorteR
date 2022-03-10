@@ -1,7 +1,7 @@
 Package: digitalDLSorteR
 Type: Package
 Title: Deconvolution of Bulk RNA-Seq Data Based on Deep Learning
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: c(
   person(given = "Diego", family = "Mañanes", email = "dmananesc@cnic.es", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7247-6794")),
   person(given = "Carlos", family = "Torroja", email = "ctorroja@cnic.es", role = "aut", comment = c(ORCID = "0000-0001-8914-3400")),
@@ -29,9 +29,9 @@ Collate: 'AllClasses.R' 'AllGenerics.R' 'digitalDLSorteR.R'
         'simSingleCell.R' 'utils.R'
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2021-10-19 09:03:53 UTC; diegommcc
+Packaged: 2022-03-09 16:12:20 UTC; diegommcc
 Author: Diego Mañanes [aut, cre] (<https://orcid.org/0000-0001-7247-6794>),
   Carlos Torroja [aut] (<https://orcid.org/0000-0001-8914-3400>),
   Fatima Sanchez-Cabo [aut] (<https://orcid.org/0000-0003-1881-1664>)
 Repository: CRAN
-Date/Publication: 2021-10-19 23:00:02 UTC
+Date/Publication: 2022-03-10 10:10:11 UTC
