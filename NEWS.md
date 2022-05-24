@@ -11,7 +11,20 @@ execution, README.
 
 # digitalDLSorteR 0.2.0 (2022-01-10)
 
-* Implemented different ways to generate pseudo-bulk samples: MeanCPM, AddCPM, and AddRawCount (`simBulkProfiles` function).
-* Implemented different ways to scale data before training: standarization and rescaling (`trainDigitalDLSorterModel` function).
+* Implemented different ways to generate pseudo-bulk samples: MeanCPM, AddCPM, 
+and AddRawCount (`simBulkProfiles` function).
+* Implemented different ways to scale data before training: standarization and 
+rescaling (`trainDigitalDLSorterModel` function).
 * Vignettes updated.
-* Detected bugs fixed.
+
+# digitalDLSorteR 0.3.0 (2022-05-24)
+
+* The `splatter` dependency has been removed: instead of using `splatter` as a 
+wrapper, `zinbFit` from the `zinbwave` package is used directly via the 
+`.zinbWaveModel` function + the `ZinbParametersModel` class. This change affects
+some functions in terms of classes/objects. Previous pre-trained models 
+(`digitalDLSorteRmodels` package) may not work properly. They will be 
+generated soon. 
+* The `edgeR` dependency has been removed: CPM-related calculations have been 
+implemented (`.cpmCalculate` function). Now, results may be slightly different 
+from those obtained with `edgeR`.
