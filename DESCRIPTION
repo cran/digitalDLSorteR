@@ -1,7 +1,7 @@
 Package: digitalDLSorteR
 Type: Package
 Title: Deconvolution of Bulk RNA-Seq Data Based on Deep Learning
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(
   person(given = "Diego", family = "Mañanes", email = "dmananesc@cnic.es", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7247-6794")),
   person(given = "Carlos", family = "Torroja", email = "ctorroja@cnic.es", role = "aut", comment = c(ORCID = "0000-0001-8914-3400")),
@@ -14,10 +14,10 @@ URL: https://diegommcc.github.io/digitalDLSorteR/,
 BugReports: https://github.com/diegommcc/digitalDLSorteR/issues
 Encoding: UTF-8
 Depends: R (>= 4.0.0)
-Imports: rlang, Matrix, Matrix.utils, methods, tidyr,
-        SingleCellExperiment, SummarizedExperiment, zinbwave, stats,
-        pbapply, S4Vectors, dplyr, tools, reshape2, gtools, reticulate,
-        keras, tensorflow, ggplot2, ggpubr, RColorBrewer
+Imports: rlang, Matrix, methods, tidyr, SingleCellExperiment,
+        SummarizedExperiment, zinbwave, stats, pbapply, S4Vectors,
+        dplyr, tools, reshape2, gtools, reticulate, keras, tensorflow,
+        ggplot2, ggpubr, RColorBrewer
 Suggests: knitr, rmarkdown, BiocParallel, rhdf5, DelayedArray,
         DelayedMatrixStats, HDF5Array, testthat
 SystemRequirements: Python (>= 2.7.0), TensorFlow
@@ -28,9 +28,9 @@ Collate: 'AllClasses.R' 'AllGenerics.R' 'digitalDLSorteR.R'
         'simSingleCell.R' 'utils.R'
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-05-24 07:41:46 UTC; CNIC\dmananesc
+Packaged: 2022-10-05 08:06:08 UTC; CNIC\dmananesc
 Author: Diego Mañanes [aut, cre] (<https://orcid.org/0000-0001-7247-6794>),
   Carlos Torroja [aut] (<https://orcid.org/0000-0001-8914-3400>),
   Fatima Sanchez-Cabo [aut] (<https://orcid.org/0000-0003-1881-1664>)
 Repository: CRAN
-Date/Publication: 2022-05-24 08:30:04 UTC
+Date/Publication: 2022-10-05 08:40:02 UTC
