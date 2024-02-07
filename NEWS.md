@@ -34,3 +34,18 @@ from those obtained with `edgeR`.
 * The `Matrix.utils` dependency has been removed: instead of using the 
 `aggregate.Matrix` function, it is used functions implemented in the `base` 
 package.
+
+# digitalDLSorteR 0.3.2 (2022-11-10)
+
+* Changed the way dense matrices (`matrix`) and `data.frame` objects are 
+transformed into `dgCMatrix` objects.
+
+# digitalDLSorteR 1.0.1 (2024-02-05)
+
+* Some name functions have been changed: createDDLSobject and trainDDLSModel.
+* Loading data (createDDLSobject) has been changed: now, only 2,000 genes are 
+used for deconvolution and bulk RNA-seq must be provided at the beginning of 
+the workflow (see documentation). 
+* Fixed bugs: standardization of features before training. 
+* Vignette modified according to the new functions. 
+* HDF5Array update: use.for parameter has been deleted.

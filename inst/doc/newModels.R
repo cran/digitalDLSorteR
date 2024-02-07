@@ -5,13 +5,11 @@ knitr::opts_chunk$set(
   eval = digitalDLSorteR:::.checkPythonDependencies(alert = "none")
 )
 
-## ----workflowfull_newModels, fig.cap = "Workflow to build new context-specific deconvolution models", echo = FALSE----
-knitr::include_graphics("workflow_building_models.png")
-
 ## -----------------------------------------------------------------------------
 ## loading the packages
-suppressMessages(library(digitalDLSorteR))
-suppressMessages(library(SingleCellExperiment))
+suppressMessages(library("digitalDLSorteR"))
+suppressMessages(library("SingleCellExperiment"))
+suppressMessages(library("SummarizedExperiment"))
 
 ## set seed for reproducibility
 set.seed(123)
@@ -31,37 +29,42 @@ sce <- SingleCellExperiment(
   )
 )
 
+se <- SummarizedExperiment(
+  matrix(
+    stats::rpois(10000, lambda = 5), nrow = 500, ncol = 20, 
+    dimnames = list(paste0("Gene", seq(500)), paste0("Sample_", seq(20)))
+  ),
+  colData = data.frame(
+    Sample_ID = paste0("Sample_", seq(20))
+  ),
+  rowData = data.frame(
+    Gene_ID = paste0("Gene", seq(500))
+  )
+)
+
 ## ----loadData-----------------------------------------------------------------
-DDLSToy <- loadSCProfiles(
-  single.cell = sce, 
-  cell.ID.column = "Cell_ID",
-  gene.ID.column = "Gene_ID",
-  min.cells = 0,
-  min.counts = 0,
+DDLSToy <- createDDLSobject(
+  sc.data = sce,
+  sc.cell.ID.column = "Cell_ID",
+  sc.gene.ID.column = "Gene_ID",
+  sc.filt.genes.cluster = FALSE, 
+  sc.log.FC = FALSE,
+  bulk.data = se,
+  bulk.sample.ID.column = "Sample_ID",
+  bulk.gene.ID.column = "Gene_ID",
   project = "ToyExample"
 )
 DDLSToy
 
-## ----loadFromFile, eval=FALSE-------------------------------------------------
-#  ## this code will not be run
-#  toyFiles <- c("countsMatrix.tsv.gz",
-#                "cellsMetadata.tsv.gz",
-#                "genesMetadata.tsv.gz")
-#  
-#  DDLSToy <- loadSCProfiles(
-#    single.cell = toyFiles,
-#    cell.ID.column = "Cell_ID",
-#    gene.ID.column = "external_gene_name",
-#    min.cells = 0, min.counts = 0,
-#    project = "ToyExampleBreast"
-#  )
-
-## ---- eval = FALSE------------------------------------------------------------
-#  DDLSToy <- loadSCProfiles(
-#    single.cell = toyFiles, cell.ID.column = "Cell_ID",
-#    gene.ID.column = "external_gene_name",
-#    min.cells = 0, min.counts = 0,
-#    file.backend = "singlecell_data.h5",
+## ----eval = FALSE-------------------------------------------------------------
+#  DDLSToy <- createDDLSobject(
+#  sc.data = sce,
+#    sc.cell.ID.column = "Cell_ID",
+#    sc.gene.ID.column = "Gene_ID",
+#    sc.filt.genes.cluster = FALSE,
+#    sc.log.FC = FALSE,
+#    sc.gene.ID.column = "external_gene_name",
+#    sc.file.backend = "singlecell_data.h5",
 #    project = "ToyExampleBreast"
 #  )
 
@@ -92,7 +95,7 @@ DDLSToy <- simSCProfiles(
 ## -----------------------------------------------------------------------------
 DDLSToy
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  DDLSToy <- simSCProfiles(
 #    object = DDLSToy,
 #    cell.ID.column = "Cell_ID",
@@ -144,13 +147,13 @@ lapply(
 
 ## ----simBulkProfiles----------------------------------------------------------
 DDLSToy <- simBulkProfiles(
-  object = DDLSToy, type.data = "both", pseudobulk.function = "MeanCPM"
+  object = DDLSToy, type.data = "both"
 )
 
 ## -----------------------------------------------------------------------------
 DDLSToy
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  DDLSToy <- simBulkProfiles(
 #    object = DDLSToy,
 #    type.data = "both",
@@ -160,14 +163,16 @@ DDLSToy
 #    threads = 2
 #  )
 
-## ---- warning = FALSE---------------------------------------------------------
-DDLSToy <- trainDigitalDLSorterModel(object = DDLSToy, scaling = "standarize")
+## ----warning = FALSE----------------------------------------------------------
+DDLSToy <- trainDDLSModel(
+  object = DDLSToy, scaling = "standardize", batch.size = 12
+)
 
 ## -----------------------------------------------------------------------------
 DDLSToy
 
-## ---- eval = FALSE------------------------------------------------------------
-#  DDLSToy <- trainDigitalDLSorterModel(object = DDLSToy, on.the.fly = TRUE)
+## ----eval = FALSE-------------------------------------------------------------
+#  DDLSToy <- trainDDLSModel(object = DDLSToy, on.the.fly = TRUE)
 
 ## -----------------------------------------------------------------------------
 DDLSToy <- calculateEvalMetrics(object = DDLSToy)
@@ -254,34 +259,27 @@ blandAltmanLehPlot(
   density = FALSE
 )
 
-## -----------------------------------------------------------------------------
-countsBulk <- matrix(
-  stats::rpois(100, lambda = sample(seq(4, 10), size = 100, replace = TRUE)), 
-  nrow = 40, ncol = 15, 
-  dimnames = list(paste0("Gene", seq(40)), paste0("Bulk", seq(15)))
-)
-
-## ----deconvoluteNewBulk_newModels---------------------------------------------
-suppressMessages(library(SummarizedExperiment, quietly = TRUE))
-seExample <- SummarizedExperiment(assay = list(counts = countsBulk))
-
-DDLSToy <- loadDeconvData(
-  object = DDLSToy,
-  data = seExample, 
-  name.data = "Simulated.example"
-)
+## ----eval = FALSE-------------------------------------------------------------
+#  suppressMessages(library(SummarizedExperiment, quietly = TRUE))
+#  seExample <- SummarizedExperiment(assay = list(counts = countsBulk))
+#  
+#  DDLSToy <- loadDeconvData(
+#    object = DDLSToy,
+#    data = seExample,
+#    name.data = "Simulated.example"
+#  )
 
 ## ----resultsBarPlot_newModels, warning=FALSE----------------------------------
-DDLSToy <- deconvDigitalDLSorterObj(
+DDLSToy <- deconvDDLSObj(
   object = DDLSToy, 
-  name.data = "Simulated.example",
+  name.data = "Bulk.DT",
   normalize = TRUE,
-  scaling = "standarize",
+  scaling = "standardize",
   verbose = FALSE
 )
 ## plot results
 barPlotCellTypes(
-  DDLSToy, name.data = "Simulated.example", 
+  DDLSToy, name.data = "Bulk.DT", 
   rm.x.text = TRUE, color.line = "black"
 )
 
