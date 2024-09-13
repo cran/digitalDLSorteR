@@ -256,10 +256,11 @@ generateBulkCellMatrix <- function(
       )
     }
   )
-  if (any(duplicated(prob.design[, cell.type.column]))) {
+  prob.design <- prob.design %>% as.data.frame()
+  if (any(duplicated(prob.design[[cell.type.column]]))) {
     stop(paste("'prob.design' must not contain duplicated cell types in",
                cell.type.column, "column"))
-  } else if (!all(prob.design[, cell.type.column] %in%
+  } else if (!all(prob.design[[cell.type.column]] %in%
                   unique(cells.metadata[, cell.type.column]))) {
     stop("There are some cell types in 'prob.design' that do not appear in ", 
          "cells metadata. Check that the 'prob.design' matrix is correctly built")
@@ -1076,7 +1077,7 @@ setCount <- function(
 #' @return A \code{\linkS4class{DigitalDLSorter}} object with \code{bulk.simul}
 #'   slot containing a list with one or two entries (depending on selected
 #'   \code{type.data} argument): \code{'train'} and \code{'test'}. Each entry
-#'   contains a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
+#'   contains a \code{SummarizedExperiment} object
 #'   with simulated bulk samples in the \code{assay} slot, sample names in the
 #'   \code{colData} slot and feature names in the \code{rowData} slot.
 #'

@@ -594,8 +594,8 @@ NULL
   if (length(SummarizedExperiment::assays(SCEobject)) == 0) {
     stop("No count data in SingleCellExperiment object provided")
   } else if (length(SummarizedExperiment::assays(SCEobject)) > 1) {
-    warning("There is more than one assay, only the first will be used. ", 
-            "Remember it must be raw data and not log-transformed data")
+    warning("More than one assay, only the first will be used. ", 
+            "Remember it must be raw data and not log-transformed data\\n")
   }
   counts <- SummarizedExperiment::assay(SCEobject)
   if (is.null(rownames(counts)) || is.null(colnames(counts))) {
@@ -784,6 +784,26 @@ NULL
   return(list(counts, cells.metadata, genes.metadata))
 }
 
+.filterGenesByVar <- function(
+  sce.obj, 
+  top.n.genes,
+  verbose = TRUE
+) {
+  if (verbose) 
+    message(
+      "\n=== As the number of resulting genes is greater than ",
+      "the top.n.genes parameter. Using only ", 
+      top.n.genes, " according to gene variance"
+    )
+  sce.obj <- computeLibraryFactors(sce.obj)
+  sce.obj <- logNormCounts(sce.obj)
+  dec.sc.obj.ln <- modelGeneVar(sce.obj)
+  final.genes <- as.data.frame(dec.sc.obj.ln) %>% 
+    arrange(desc(abs(.data[["bio"]]))) %>% head(top.n.genes) %>% rownames()
+
+  return(final.genes)
+}
+
 .filterGenesByCluster <- function(
     sce.obj,
     cell.type.column, 
@@ -791,6 +811,7 @@ NULL
     n.genes.per.cluster,
     top.n.genes,
     log.FC,
+    log.FC.cutoff,
     verbose
 ) {
   
@@ -827,7 +848,7 @@ NULL
     list.cluster.FC, 
     \(x) {
       if (log.FC) {
-        x <- x[x >= 0.5] ## only if logFC > 0.5  
+        x <- x[x >= log.FC.cutoff] 
       }
       x[order(x, decreasing = T)] %>% head(n.genes.per.cluster) %>% names()
     }
@@ -838,18 +859,6 @@ NULL
     message(
       "\n=== Number of genes after filtering based on logFC: ", length(final.genes)
     )
-  
-  if (length(final.genes) > top.n.genes) {
-    if (verbose) 
-      message(
-        "\n=== As the number of resulting genes is greater than ",
-        "the top.n.genes parameter. Using only ", 
-        top.n.genes, " according to gene variance"
-      )
-    dec.sc.obj.ln <- modelGeneVar(sce.obj.norm[final.genes, ])
-    final.genes <- as.data.frame(dec.sc.obj.ln) %>% 
-      arrange(desc(abs(.data[["bio"]]))) %>% head(top.n.genes) %>% rownames()
-  }
   
   return(final.genes)
 }
@@ -991,9 +1000,9 @@ NULL
 #' and bulk RNA-seq data
 #'
 #' This function creates a \code{\linkS4class{DigitalDLSorter}} object from 
-#' single-cell RNA-seq (\code{\linkS4class{SingleCellExperiment}} object) and 
+#' single-cell RNA-seq (\code{SingleCellExperiment} object) and 
 #' bulk RNA-seq data to be deconvoluted (\code{bulk.data} parameter) 
-#' as a \code{\linkS4class{SummarizedExperiment}} object. 
+#' as a \code{SummarizedExperiment} object. 
 #' 
 #' \strong{Filtering genes}
 #' 
@@ -1018,7 +1027,7 @@ NULL
 #' 
 #' Single-cell RNA-seq data can be provided from files (formats allowed: tsv,
 #' tsv.gz, mtx (sparse matrix) and hdf5) or a
-#' \code{\linkS4class{SingleCellExperiment}} object. The data provided should 
+#' \code{SingleCellExperiment} object. The data provided should 
 #' consist of three pieces of information: \itemize{ \item Single-cell counts: 
 #' genes as rows and cells as columns. \item Cells metadata: annotations 
 #' (columns) for each cell (rows). \item Genes metadata: annotations (columns) 
@@ -1026,7 +1035,7 @@ NULL
 #' \code{single.cell.real} argument must be a vector of three elements ordered 
 #' so that the first file corresponds to the count matrix, the second to the 
 #' cells metadata and the last to the genes metadata. On the other hand, if the 
-#' data is provided as a \code{\linkS4class{SingleCellExperiment}} object, it 
+#' data is provided as a \code{SingleCellExperiment} object, it 
 #' must contain single-cell counts in the \code{assay} slot, cells metadata in 
 #' the \code{colData} slot and genes metadata in the \code{rowData}. The data 
 #' must be provided without any transformation (e.g. log-transformation) and raw
@@ -1034,7 +1043,7 @@ NULL
 #' 
 #' \strong{Bulk transcriptomics data}
 #'
-#' It must be a \code{\linkS4class{SummarizedExperiment}} object (or a list of 
+#' It must be a \code{SummarizedExperiment} object (or a list of 
 #' them if samples from different experiments are going to be deconvoluted) 
 #' containing the same information as the single-cell RNA-seq data: the count 
 #' matrix, samples metadata (with IDs is enough), and genes metadata. Please, 
@@ -1046,7 +1055,7 @@ NULL
 #'   are provided from files, \code{single.cell.real} must be a vector of three
 #'   elements: single-cell counts, cells metadata and genes metadata. On the
 #'   other hand, If data are provided from a
-#'   \code{\linkS4class{SingleCellExperiment}} object, single-cell counts must
+#'   \code{SingleCellExperiment} object, single-cell counts must
 #'   be present in the \code{assay} slot, cells metadata in the \code{colData}
 #'   slot, and genes metadata in the \code{rowData} slot.
 #' @param sc.cell.ID.column Name or number of the column in cells metadata
@@ -1058,7 +1067,7 @@ NULL
 #'   corresponding to the names used for features/genes (single-cell RNA-seq
 #'   data).
 #' @param bulk.data Bulk transcriptomics data to be deconvoluted. It has to be
-#'   a \code{\linkS4class{SummarizedExperiment}} object.
+#'   a \code{SummarizedExperiment} object.
 #' @param bulk.sample.ID.column Name or column number corresponding to sample 
 #'   IDs in samples metadata (bulk transcriptomics data).
 #' @param bulk.gene.ID.column Name or number of the column in the genes metadata
@@ -1082,6 +1091,7 @@ NULL
 #'   variability across the whole single-cell dataset. 
 #' @param sc.log.FC Whether to filter genes with a logFC less than 0.5 when 
 #'   \code{sc.filt.genes.cluster = TRUE}. 
+#' @param sc.log.FC.cutoff LogFC cutoff used if \code{sc.log.FC == TRUE}.
 #' @param sc.min.counts Minimum gene counts to filter (1 by default; single-cell
 #'   RNA-seq data).
 #' @param sc.min.cells Minimum of cells with more than \code{min.counts} (1 by
@@ -1129,7 +1139,7 @@ NULL
 #'
 #' @return A \code{\linkS4class{DigitalDLSorter}} object with the single-cell
 #'   RNA-seq data provided loaded into the \code{single.cell.real} slot as a
-#'   \code{\linkS4class{SingleCellExperiment}} object. If bulk
+#'   \code{SingleCellExperiment} object. If bulk
 #'   transcriptomics data are provided, they will be stored in the
 #'   \code{deconv.data} slot.
 #'
@@ -1182,6 +1192,7 @@ createDDLSobject <- function(
   sc.n.genes.per.cluster = 300,
   top.n.genes = 2000,
   sc.log.FC = TRUE,
+  sc.log.FC.cutoff = 0.5,
   sc.min.counts = 1,
   sc.min.cells = 1,
   bulk.min.counts = 1,
@@ -1198,9 +1209,18 @@ createDDLSobject <- function(
 ) {
   if (missing(sc.cell.type.column)) sc.cell.type.column <- NULL
   # in case filtering according to expression in each cluster is used
-  if (sc.filt.genes.cluster & (is.null(sc.cell.type.column) | missing(sc.cell.type.column))) {
-    stop("sc.cell.type.column must be provided")
+  if (sc.filt.genes.cluster) {
+    if (is.null(sc.cell.type.column)) {
+      stop("sc.cell.type.column must be provided")
+    } 
+    .checkColumn(
+      metadata = colData(sc.data) %>% as.data.frame(),
+      ID.column = sc.cell.type.column,
+      type.metadata = "cells.metadata",
+      arg = "sc.cell.type.column"
+    )
   } 
+  
   ## bulk transcriptomics profiles
   if (!missing(bulk.data)) {
     if (missing(bulk.name.data)) {
@@ -1217,6 +1237,12 @@ createDDLSobject <- function(
   } else {
     se.object <- NULL
     if (verbose) message("=== Bulk RNA-seq data not provided")
+  }
+  
+  if (sc.log.FC) {
+    if (sc.log.FC.cutoff < 0) {
+      stop("'sc.log.FC.cutoff' cannot be less than 0")
+    }
   }
   
   single.cell.real <- .loadSCData(
@@ -1274,7 +1300,6 @@ createDDLSobject <- function(
     }
   }
   if (sc.filt.genes.cluster) {
-    ## put an argument to test logFCs
     final.genes <- .filterGenesByCluster(
       sce.obj = single.cell.real,
       cell.type.column = sc.cell.type.column, 
@@ -1282,12 +1307,29 @@ createDDLSobject <- function(
       n.genes.per.cluster = sc.n.genes.per.cluster,
       top.n.genes = top.n.genes,
       log.FC = sc.log.FC,
+      log.FC.cutoff = sc.log.FC.cutoff,
       verbose = verbose
     )  
     if (!missing(bulk.data)) {
       se.object <- se.object[final.genes, ]  
     }
     single.cell.real <- single.cell.real[final.genes, ]
+  }
+  
+  ## in case the number of final dimenions is too high, this is out of 
+  # sc.filt.genes.cluster to filter genes although it is set to FALSE
+  if (nrow(single.cell.real) > top.n.genes) {
+    final.genes <- .filterGenesByVar(
+      sce.obj = single.cell.real, top.n.genes = top.n.genes, verbose = verbose
+    )
+    if (!missing(bulk.data)) {
+      se.object <- se.object[final.genes, ]  
+    }
+    single.cell.real <- single.cell.real[final.genes, ]
+  }
+  
+  if (nrow(single.cell.real) <= 10) { ## this cutoff is arbitrary
+    stop("The number of final dimensions is too low. Consider decreasing the 'sc.log.FC.cutoff' parameter")
   }
   
   ## messages

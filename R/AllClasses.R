@@ -28,13 +28,13 @@ setClassUnion(name = "KerasTrainOrNULL",
 #' The Class ZinbParametersModel
 #'
 #' The ZinbParametersModel class is a wrapper class of the
-#' \code{\linkS4class{ZinbModel}} class from zinbwave package.
+#' \code{ZinbModel} class from zinbwave package.
 #'
-#' This is a wrapper class of the \code{\linkS4class{ZinbModel}} class. It
+#' This is a wrapper class of the \code{ZinbModel} class. It
 #' consists of only one slot (\code{zinbwave.mode}) that contains the
-#' \code{\linkS4class{ZinbModel}} object.
+#' \code{ZinbModel} object.
 #'
-#' @slot zinbwave.model A valid \code{\linkS4class{ZinbModel}} object.
+#' @slot zinbwave.model A valid \code{ZinbModel} object.
 #'
 #' @references Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general
 #'   and flexible method for signal extraction from single-cell RNA-seq data.
@@ -245,7 +245,8 @@ DigitalDLSorterDNN <- setClass(
     test.pred = "MatrixOrNULL",
     cell.types = "character",
     features = "character",
-    test.deconv.metrics = "ListOrNULL"
+    test.deconv.metrics = "ListOrNULL",
+    interpret.gradients = "ListOrNULL"
   )
 )
 
@@ -260,7 +261,8 @@ setMethod(
     test.pred = NULL,
     cell.types = "-",
     features = "-",
-    test.deconv.metrics = NULL
+    test.deconv.metrics = NULL,
+    interpret.gradients = NULL
   ) {
     .Object@model <- model
     .Object@training.history <- training.history
@@ -269,6 +271,7 @@ setMethod(
     .Object@cell.types <- cell.types
     .Object@features <- features
     .Object@test.deconv.metrics <- test.deconv.metrics
+    .Object@interpret.gradients <- interpret.gradients
     return(.Object)
   }
 )
@@ -315,17 +318,18 @@ setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 #' stores different intermediate data resulting from the creation of new
 #' context-specific deconvolution models from single-cell data. It is only used
 #' in the case of building new deconvolution models. To deconvolute bulk samples
-#' using pre-trained models, see \code{\link{deconvDigitalDLSorter}} function
+#' using pre-trained models, see \code{\link{deconvDDLSPretrained}} function
 #' and the package \pkg{digitalDLSorteRdata}.
 #'
 #' This object uses other classes to store the different types of data produced
-#' during the process: \itemize{ \item \code{\linkS4class{SingleCellExperiment}}
-#' class for single-cell RNA-Seq data, using sparse matrix from the \pkg{Matrix}
-#' package (\code{\linkS4class{dgCMatrix}} class) or \code{HDF5Array} class in
+#' during the process: \itemize{ \item 
+#' \code{SingleCellExperiment} class for single-cell 
+#' RNA-Seq data, using sparse matrix from the \pkg{Matrix}
+#' package (\code{dgCMatrix} class) or \code{HDF5Array} class in
 #' the case of using HDF5 files as back-end (see below for more information).
-#' \item \code{\linkS4class{ZinbModel}} class with estimated parameters for the
+#' \item \code{ZinbModel} class with estimated parameters for the
 #' simulation of new single-cell profiles. \item
-#' \code{\linkS4class{SummarizedExperiment}} class for large bulk RNA-Seq data
+#' \code{SummarizedExperiment} class for large bulk RNA-Seq data
 #' storage. \item \code{\linkS4class{ProbMatrixCellTypes}} class for the
 #' compositional cell matrices constructed during the process. See
 #' \code{?\linkS4class{ProbMatrixCellTypes}} for details. \item
@@ -338,7 +342,7 @@ setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 #' using pre-trained models available at \pkg{digitalDLSorteRdata} package. If
 #' you want to build new models, see \code{\link{createDDLSobject}} function. On
 #' the other hand, if you want to use pre-trained models, see
-#' \code{\link{deconvDigitalDLSorter}} function.
+#' \code{\link{deconvDDLSPretrained}} function.
 #'
 #' In order to provide a way to work with large amounts of data on
 #' RAM-constrained machines, we provide the possibility to use HDF5 files as
@@ -352,12 +356,12 @@ setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 #'
 #' @slot single.cell.real Real single-cell data stored in a
 #'   \code{SingleCellExperiment} object. The count matrix is stored as
-#'   \code{\linkS4class{dgCMatrix}} or \code{HDF5Array} objects.
-#' @slot deconv.data List of \code{\linkS4class{SummarizedExperiment}} objects
+#'   \code{dgCMatrix} or \code{HDF5Array} objects.
+#' @slot deconv.data List of \code{SummarizedExperiment} objects
 #'   where it is possible to store new bulk RNA-Seq experiments for
 #'   deconvolution. The name of the entries corresponds to the name of the data
 #'   provided. See \code{\link{trainDDLSModel}} for details.
-#' @slot zinb.params \code{\linkS4class{ZinbModel}} object with estimated
+#' @slot zinb.params \code{ZinbModel} object with estimated
 #'   parameters for the simulation of new single-cell expression profiles.
 #' @slot single.cell.simul Simulated single-cell expression profiles from the
 #'   ZINB-WaVE model.
@@ -365,7 +369,7 @@ setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 #'   cell composition matrices built for the simulation of pseudo-bulk RNA-Seq
 #'   profiles with known cell composition.
 #' @slot bulk.simul A list of simulated train and test bulk RNA-Seq samples.
-#'   Each entry is a \code{\linkS4class{SummarizedExperiment}} object. The count
+#'   Each entry is a \code{SummarizedExperiment} object. The count
 #'   matrices can be stored as \code{HDF5Array} files using HDF5 files as
 #'   back-end in case of RAM limitations.
 #' @slot trained.model \code{\linkS4class{DigitalDLSorterDNN}} object with all
